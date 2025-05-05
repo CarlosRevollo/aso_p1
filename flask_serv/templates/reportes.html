@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Reportes{% endblock %}
+{% block content %}
+<h1>Reportes</h1>
+<table class="table table-striped">
+    <thead>
+        <tr><th>ID</th><th>Nombre</th><th>Acción</th></tr>
+    </thead>
+    <tbody>
+        {% for ip, fecha_hora in registros_acceso %}
+        <tr>
+            <td>{{ ip }}</td>
+            <td>{{ fecha_hora }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
