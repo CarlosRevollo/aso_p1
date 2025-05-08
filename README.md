@@ -11,7 +11,7 @@ Una aplicación web basada en Flask para la visualización, búsqueda y análisi
 
 ## Requisitos
 
-- Python 3.6 o superior
+- Python 3.12 o superior
 - MySQL/MariaDB
 - Dependencias de Python especificadas en `requirements.txt`
 
@@ -19,8 +19,8 @@ Una aplicación web basada en Flask para la visualización, búsqueda y análisi
 
 1. Clona este repositorio:
    ```
-   git clone https://github.com/tu-usuario/APP_LOGS.git
-   cd APP_LOGS
+   git clone https://github.com/CarlosRevollo/aso_p1
+   cd aso_p1
    ```
 
 2. Crea y activa un entorno virtual:
@@ -64,8 +64,8 @@ La aplicación estará disponible en: http://localhost:5000
 ## Estructura del Proyecto
 
 ```
-APP_LOGS/
-├── app/
+ASO_P1/
+├── flask_serv/
 │   ├── app.py           # Punto de entrada de la aplicación Flask
 │   ├── config.py        # Configuraciones centralizadas
 │   ├── database.py      # Funciones de acceso a la base de datos
@@ -88,7 +88,3 @@ Para agregar soporte para nuevos tipos de logs, se debe:
 1. Crear una tabla apropiada en la base de datos
 2. Agregar una nueva sección en la función `obtener_eventos()` en `database.py`
 3. Actualizar la interfaz para incluir el nuevo servicio en los filtros
-
-## Licencia
-
-[Especificar licencia]
