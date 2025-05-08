@@ -1,18 +1,191 @@
-{% extends "layout.html" %}
-{% block title %}Reportes{% endblock %}
+{% extends 'base.html' %}
+
 {% block content %}
-<h1>Reportes</h1>
-<table class="table table-striped">
-    <thead>
-        <tr><th>ID</th><th>Nombre</th><th>Acción</th></tr>
-    </thead>
-    <tbody>
-        {% for ip, fecha_hora in registros_acceso %}
-        <tr>
-            <td>{{ ip }}</td>
-            <td>{{ fecha_hora }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <h4>Reportes de Acceso</h4>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="fa fa-arrow-left"></i> Volver a la página principal
+    </a>
+</div>
+
+<div class="card my-4">
+    <div class="card-header">
+        <h5>Estadísticas de acceso por día (últimos 30 días)</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Accesos Totales</th>
+                    <th>IPs Únicas</th>
+                    <th>Errores</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros_acceso %}
+                <tr>
+                    <td>{{ registro.fecha }}</td>
+                    <td>{{ registro.total_accesos }}</td>
+                    <td>{{ registro.ips_unicas }}</td>
+                    <td>
+                        {% if registro.errores > 0 %}
+                            <span class="badge bg-danger">{{ registro.errores }}</span>
+                        {% else %}
+                            <span class="badge bg-success">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/detalle?fecha={{ registro.fecha }}" class="btn btn-sm btn-primary">Ver detalle</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay registros de acceso disponibles.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Gráfico de Actividad -->
+    <div class="col-md-6">
+        <div class="card my-4">
+            <div class="card-header">
+                <h5>Gráfico de Actividad Diaria</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart" width="100%" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Errores vs Accesos Exitosos -->
+    <div class="col-md-6">
+        <div class="card my-4">
+            <div class="card-header">
+                <h5>Gráfico de Errores vs Accesos Exitosos</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="errorsChart" width="100%" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para los gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Datos proporcionados por la plantilla
+    const chartData = {
+        labels: {{ datos_grafico.fechas | tojson }},
+        accesos: {{ datos_grafico.accesos | tojson }},
+        errores: {{ datos_grafico.errores | tojson }}
+    };
+    
+    // Configuración para el gráfico de actividad diaria
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Accesos Diarios',
+                data: chartData.accesos,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Accesos'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Fecha'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Actividad de Accesos por Día'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+    
+    // Configuración para el gráfico de errores vs accesos exitosos
+    const errorsCtx = document.getElementById('errorsChart').getContext('2d');
+    new Chart(errorsCtx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: 'Accesos Exitosos',
+                    data: chartData.accesos.map((acceso, i) => acceso - chartData.errores[i]),
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Errores',
+                    data: chartData.errores,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Accesos'
+                    }
+                },
+                x: {
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Fecha'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Errores vs Accesos Exitosos'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}
