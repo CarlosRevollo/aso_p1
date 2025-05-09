@@ -68,31 +68,36 @@ def formatear_fecha(fecha_str, es_fecha_fin=False):
     Formatea una cadena de fecha para consultas SQL.
     
     Convierte una fecha en formato string a un formato compatible con
-    consultas SQL. Si es fecha de inicio, establece la hora a 00:00:00.
-    Si es fecha de fin, establece la hora a 23:59:59.
+    consultas SQL. Maneja múltiples formatos de entrada:
+    - ISO 8601 (YYYY-MM-DDTHH:mm)
+    - Fecha simple (YYYY-MM-DD)
     
     Args:
         fecha_str (str): Fecha en formato 'YYYY-MM-DD' o 'YYYY-MM-DDThh:mm'
         es_fecha_fin (bool): Indica si la fecha es de fin de período
         
     Returns:
-        str: Fecha formateada en formato 'YYYY-MM-DD hh:mm:ss' o None si hay error
+        str: Fecha formateada en formato 'YYYY-MM-DD HH:mm:ss' o None si hay error
     """
     if not fecha_str:
         return None
     
     try:
         if "T" in fecha_str:  # Formato ISO con hora incluida
-            return fecha_str.replace("T", " ")
+            fecha = datetime.strptime(fecha_str, "%Y-%m-%dT%H:%M")
+            if es_fecha_fin:
+                # Si es fecha fin y no tiene segundos, poner al final del minuto
+                fecha = fecha + timedelta(minutes=1) - timedelta(seconds=1)
+            return fecha.strftime("%Y-%m-%d %H:%M:%S")
         
-        # Solo formato de fecha
+        # Solo formato de fecha (YYYY-MM-DD)
         fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
         if es_fecha_fin:
             # Si es fecha fin, poner al final del día
             fecha = fecha + timedelta(days=1) - timedelta(seconds=1)
         return fecha.strftime("%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        print(f"Error al formatear fecha: {fecha_str}")
+    except ValueError as e:
+        print(f"Error al formatear fecha: {fecha_str} - {str(e)}")
         return None
 
 # Funciones auxiliares para las plantillas
